@@ -1,0 +1,217 @@
+Modul Analisis dan Visualisasi Data 
+"Analisis Performa Penjualan E-commerce" 
+ 
+Sebelum melakukan praktikum Analisis dan Visualisasi Data perlu mengambil data dari 
+Kaggle, ada dua cara utama: melalui Interface Web (manual) dan melalui Kaggle API 
+(otomatis/skrip). Cara kedua sangat direkomendasikan untuk praktikum karena lebih 
+profesional dan memudahkan replikasi kode. 
+Berikut adalah panduan langkah demi langkahnya: 
+1. Cara Manual (Download via Browser) 
+Ini adalah cara termudah jika Anda hanya membutuhkan satu file sekali saja. 
+1. Buka situs Kaggle. 
+2. Cari dataset yang diinginkan (misal: "E-commerce Sales Data"). 
+3. Klik tombol "Download" di pojok kanan atas halaman dataset. 
+4. Anda akan mendapatkan file .zip. Ekstrak file tersebut dan pindahkan file .csv ke 
+folder proyek Anda. 
+2. Cara Otomatis (Menggunakan Kaggle API) 
+Cara ini sangat berguna jika Anda menggunakan Google Colab agar tidak perlu upload 
+manual setiap kali sesi berakhir. 
+Langkah A: Mendapatkan API Token 
+1. Masuk ke akun Kaggle Anda. 
+2. Klik foto profil di kanan atas > Settings. 
+3. Gulir ke bawah hingga bagian API. 
+4. Klik "Create New Token". Sebuah file bernama kaggle.json akan terunduh 
+otomatis. 
+Langkah B: Implementasi di Google Colab 
+Salin dan jalankan langkah-langkah berikut di sel kode Anda: 
+1. Install Library & Upload JSON 
+Python 
+!pip install -q kaggle 
+from google.colab import files 
+files.upload() # Pilih file kaggle.json yang baru saja diunduh 
+2. Atur Konfigurasi Folder 
+Python 
+!mkdir -p ~/.kaggle 
+!cp kaggle.json ~/.kaggle/ 
+!chmod 600 ~/.kaggle/kaggle.json 
+3. Cari & Download Dataset 
+Misalkan kita ingin mengambil dataset "E-commerce Data" dari user carrie1. Anda bisa 
+melihat nama dataset di URL-nya (contoh: kaggle.com/datasets/carrie1/ecommerce-
+data). 
+Python 
+# Mencari dataset 
+!kaggle datasets list -s "ecommerce data" 
+ 
+# Download dataset (Ganti 'carrie1/ecommerce-data' sesuai dataset pilihan) 
+!kaggle datasets download -d carrie1/ecommerce-data 
+ 
+# Ekstrak file zip yang terunduh 
+!unzip ecommerce-data.zip 
+ 
+Tips untuk Praktikum 
+Mengapa Menggunakan API? 
+● Efisiensi: Siswa tidak perlu menghabiskan kuota/waktu untuk download-upload 
+file besar. 
+● Reproducibility: Jika data di Kaggle diperbarui, skrip Anda akan tetap berfungsi 
+dan mengambil versi terbaru. 
+● Standar Industri: Membiasakan siswa bekerja dengan cloud environment dan 
+API. 
+Troubleshooting Umum 
+● Error 401 Unauthorized: Biasanya karena file kaggle.json belum diunggah atau 
+lokasinya salah. 
+● Error 403 Forbidden: Pastikan Anda sudah mengklik "Accept Rules" pada 
+halaman dataset di Kaggle (beberapa dataset kompetisi mewajibkan Anda setuju 
+pada aturan mereka sebelum bisa mengunduh). 
+ 
+Panduan Praktik: Analisis Data E-commerce 
+Langkah 1: Persiapan Library & Data 
+Salin kode ini untuk menyiapkan lingkungan kerja. 
+Python 
+import pandas as pd 
+import matplotlib.pyplot as plt 
+import seaborn as sns 
+ 
+# Menggunakan dataset contoh (bisa diganti dengan path file Kaggle Anda) 
+df = pd.read_csv('data_penjualan.csv') 
+print(df.head()) 
+ 
+Langkah 2: Inspeksi & Pembersihan Data (Data Cleaning) 
+Sebelum dianalisis, kita harus memastikan data "bersih". 
+1. Cek Tipe Data: df.info() 
+2. Cek Data Kosong: df.isnull().sum() 
+3. Pembersihan: * Jika ada harga yang negatif (data anomali), kita hapus: df = 
+df[df['Price'] > 0] 
+o Ubah kolom tanggal: df['Order_Date'] = pd.to_datetime(df['Order_Date']) 
+ 
+Langkah 3: Analisis & Visualisasi 
+Mari kita buat visualisasi untuk menjawab pertanyaan bisnis. 
+● Analisis Tren Penjualan Bulanan (Line Chart) 
+Python 
+df['Order_Date'] = pd.to_datetime(df['Order_Date']) 
+df['Month'] = df['Order_Date'].dt.to_period('M').astype(str) 
+monthly_sales = df.groupby('Month')['Total_Sales'].sum() 
+ 
+plt.figure(figsize=(10,5)) 
+plt.plot(monthly_sales.index, monthly_sales.values, marker='o', color='b') 
+plt.title('Tren Penjualan Bulanan') 
+plt.xticks(rotation=45) 
+plt.show() 
+ 
+● Analisis Korelasi (Heatmap) 
+Untuk melihat apakah biaya iklan berpengaruh pada jumlah penjualan. 
+Python 
+correlation = df[['Total_Sales', 'Ad_Budget', 'Discount_Percentage']].corr() 
+sns.heatmap(correlation, annot=True, cmap='coolwarm') 
+plt.title('Peta Korelasi Antar Variabel') 
+plt.show() 
+ 
+Studi Kasus Komprehensif: "Optimasi Strategi Pemasaran" 
+Latar Belakang: 
+Sebuah perusahaan e-commerce menyadari bahwa meskipun trafik tinggi, profit di 
+beberapa wilayah menurun. Anda diminta sebagai Data Analyst untuk memberikan 
+rekomendasi berbasis data. 
+Data yang tersedia di Kaggle (Saran): Sample Sales Data atau Brazilian E-Commerce 
+Public Dataset by Olist. 
+ 
+Tugas Siswa (Kelompok Sebangku) 
+1. Identifikasi Produk "Underperformer" 
+Temukan produk yang memiliki Harga Tinggi namun Volume Penjualan Rendah. 
+Produk ini membebani arus kas karena nilai per satuannya mahal tapi jarang laku. 
+● Analisis: Cari produk dengan Price_Per_Unit di atas rata-rata, namun 
+memiliki total Quantity terkecil. 
+● Visualisasi: Gunakan Scatter Plot. 
+○ Sumbu X: Price_Per_Unit 
+○ Sumbu Y: Quantity 
+● Tujuan: Menentukan apakah harga yang terlalu mahal menjadi penghambat 
+volume penjualan. 
+ 
+2. Segmentasi Pelanggan (RFM Analysis) 
+Kelompokkan pelanggan berdasarkan: 
+● Recency: Kapan terakhir kali mereka belanja? (Hitung selisih hari dari transaksi 
+terakhir.) 
+● Frequency: Seberapa sering mereka belanja? (Hitung jumlah Order_ID per 
+pelanggan.) 
+● Monetary: Berapa total uang yang mereka habiskan? (Jumlahkan Total_Sales 
+per pelanggan.) 
+● Tujuan: Mengelompokkan pelanggan untuk menentukan siapa yang berhak 
+mendapatkan voucher loyalitas. 
+ 
+3. Analisis Kontribusi Kategori  
+Tentukan Efisiensi Kategori Produk. 
+● Analisis: Bandingkan total pendapatan per kategori terhadap total anggaran 
+iklan (Ad_Budget) yang dihabiskan di kategori tersebut. 
+● Visualisasi: Bar Chart Horizontal. Urutkan kategori dari yang paling tidak 
+efisien (iklan besar tapi penjualan kecil) ke yang paling efisien. 
+4. Uji Hipotesis Sederhana 
+Kita akan menguji pengaruh iklan. 
+● Pertanyaan: "Apakah peningkatan Ad_Budget di atas median benar-benar 
+menghasilkan peningkatan Total_Sales yang signifikan?" 
+● Langkah: Bagi data menjadi dua kelompok (Iklan Tinggi vs Iklan Rendah) 
+berdasarkan nilai tengah (median), lalu bandingkan rata-rata penjualannya. 
+ 
+Lanjutan Langkah 4: Analisis & Visualisasi Lanjutan (Kelompok Sebangku) 
+Praktikum lanjutan dengan RFM Analysis adalah yang paling krusial karena 
+menggabungkan logika bisnis dengan teknik manipulasi data yang kuat. Sementara 
+Regresi Linear memberikan landasan untuk analisis prediktif. 
+Berikut adalah detail teknis yang bisa Anda masukkan ke dalam modul: 
+5. Pendalaman Teknik: RFM Analysis 
+RFM adalah teknik segmentasi pelanggan berdasarkan perilaku transaksi. Ini sangat 
+populer di industri karena hasilnya langsung bisa digunakan oleh tim pemasaran. 
+ 
+Kode Implementasi Python: 
+Python 
+import datetime as dt 
+ 
+# Asumsi 'Snapshot_Date' adalah hari esok dari tanggal transaksi terakhir di data 
+snapshot_date = df['Order_Date'].max() + dt.timedelta(days=1) 
+ 
+rfm = df.groupby('CustomerID').agg({ 
+    'Order_Date': lambda x: (snapshot_date - x.max()).days, # Recency 
+    'Order_ID': 'count',                                   # Frequency 
+    'Total_Sales': 'sum'                                   # Monetary 
+}) 
+ 
+# Rename kolom agar mudah dibaca 
+rfm.columns = ['Recency', 'Frequency', 'Monetary'] 
+
+ 
+# Memberikan skor 1-5 (Semakin tinggi semakin baik) 
+rfm['R_Score'] = pd.qcut(rfm['Recency'], 5, labels=[5, 4, 3, 2, 1]) # Recency kecil = Skor 
+besar 
+rfm['F_Score'] = pd.qcut(rfm['Frequency'].rank(method='first'), 5, labels=[1, 2, 3, 4, 5]) 
+rfm['M_Score'] = pd.qcut(rfm['Monetary'], 5, labels=[1, 2, 3, 4, 5]) 
+ 
+# Gabungkan skor menjadi satu segmen 
+rfm['RFM_Group'] = rfm.R_Score.astype(str) + rfm.F_Score.astype(str) + 
+rfm.M_Score.astype(str) 
+ 
+6. Pendalaman Teknik: Regresi Linear Sederhana 
+ 
+Kode Implementasi (Scikit-Learn): 
+Python 
+from sklearn.model_selection import train_test_split 
+from sklearn.linear_model import LinearRegression 
+ 
+X = df[['Ad_Budget']] # Fitur 
+y = df['Total_Sales'] # Target 
+ 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42) 
+ 
+model = LinearRegression() 
+model.fit(X_train, y_train) 
+ 
+print(f"Koefisien Iklan: {model.coef_[0]}") 
+
+print(f"Akurasi Model (R2 Score): {model.score(X_test, y_test)}") 
+ 
+ 
+Struktur Laporan Praktikum 
+Laporan praktikum dengan struktur: 
+1. Business Question: Apa yang ingin dijawab? (Misal: "Siapa pelanggan terbaik 
+kita?") 
+2. Data Wrangling: Proses pembersihan yang dilakukan. 
+3. Insights: Penjelasan dari visualisasi (Gunakan grafik Heatmap atau Bar Chart). 
+4. Recommendation: Apa yang harus dilakukan perusahaan selanjutnya? 
+5. Laporan dilakukan di Repository Github masing-masing pada readme yang ada 
+di Repository bukan di dokumen terpisah. Atau bisa langsung di dalam setelah 
+code program selesai seperti biasanya. 
